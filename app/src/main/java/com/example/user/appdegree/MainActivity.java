@@ -10,7 +10,7 @@ public class MainActivity extends AppCompatActivity {
 
 private Button btningresso;
 private Button btnuscita;
-private Boolean richiesta;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,6 +22,7 @@ private Boolean richiesta;
             public void onClick(View view) {
                 Intent openLogin = new Intent(MainActivity.this,LoginActivity.class);
                 startActivity(openLogin);
+                openLogin.putExtra("richiesta",true);
             }
         });
         btnuscita.setOnClickListener(new View.OnClickListener(){
@@ -29,6 +30,7 @@ private Boolean richiesta;
             public void onClick(View view) {
                 Intent openLogin = new Intent(MainActivity.this,LoginActivity.class);
                 startActivity(openLogin);// FORSE CAMBIARE NOME ALL'INTENT
+                openLogin.putExtra("richiesta",false);
             }
         });
     }
