@@ -20,13 +20,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
@@ -35,6 +43,7 @@ public class LoginActivity extends AppCompatActivity {
     ImageView imageView;
     String pathToFile;
     Bitmap photo;
+    EditText password;
     private static final int PERMISSION_REQUEST_CODE = 200;
     private static final int CAMERA_REQUEST = 1888;
 
@@ -44,6 +53,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         btnInvio=findViewById(R.id.button3);
+        final Bundle richiesta = getIntent().getExtras();
 
         if (Build.VERSION.SDK_INT >=23)
         {
@@ -54,10 +64,40 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 dispatchPictureTakerAction();
+                String url = "http://localhost:8080/prova";
+                StringRequest sq =new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                }){
+                    protected Map< String,String > getParams(){
+
+                        Map<String,String> parr=new HashMap<String, String>();
+                        parr.put("password",password.getText().toString());
+                        parr.put("richiesta", richiesta.toString());
+                        // inserire anche il parametro della foto
+
+                        return parr;
+
+
+
+                    }
+                };
+                AppController.getInstance().addToRequestQueue(sq);
+                Toast.makeText(getApplicationContext(), "SUCCESS", Toast.LENGTH_LONG).show();
+                //String psw= password.getText().toString();
+                // metodo che mi ritorna il file della foto
             }
         });
 
         imageView = (ImageView)findViewById(R.id.imageView);
+
     }
 
     private void dispatchPictureTakerAction()
