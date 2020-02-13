@@ -15,8 +15,8 @@ private Boolean richiesta;
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-         btningresso=findViewById(R.id.button1);
-         btnuscita=findViewById(R.id.button2);
+        btningresso=findViewById(R.id.button1);
+        btnuscita=findViewById(R.id.button2);
         btningresso.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
@@ -24,7 +24,7 @@ private Boolean richiesta;
                 startActivity(openLogin);
             }
         });
-       btnuscita.setOnClickListener(new View.OnClickListener(){
+        btnuscita.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
                 Intent openLogin = new Intent(MainActivity.this,LoginActivity.class);
