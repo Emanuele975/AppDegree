@@ -20,6 +20,7 @@ private Button btnuscita;
         btningresso.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
+                System.out.println("nell on click");
                 Intent openLogin = new Intent(MainActivity.this,LoginActivity.class);
                 startActivity(openLogin);
                 openLogin.putExtra("richiesta",true);
