@@ -24,16 +24,17 @@ private Button btnuscita;
             public void onClick(View view) {
                 System.out.println("nell on click");
                 Intent openLogin = new Intent(MainActivity.this,LoginActivity.class);
+                openLogin.putExtra("richiesta","true");
                 startActivity(openLogin);
-                openLogin.putExtra("richiesta",true);
             }
         });
         btnuscita.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
                 Intent openLogin = new Intent(MainActivity.this,LoginActivity.class);
+                openLogin.putExtra("richiesta","false");
                 startActivity(openLogin);// FORSE CAMBIARE NOME ALL'INTENT
-                openLogin.putExtra("richiesta",false);
+
             }
         });
     }

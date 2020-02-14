@@ -11,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 
 public class RequestService extends IntentService {
@@ -55,11 +56,12 @@ public class RequestService extends IntentService {
         HttpURLConnection connection = null;
         try {
             connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
+            connection.setRequestMethod("POST");
 
             // Read the response from the right stream
             int code = connection.getResponseCode();
             //System.out.println("CODE : " + code);
+            /*
             int count = 0;
             if(code == HttpURLConnection.HTTP_OK){
 
@@ -102,26 +104,16 @@ public class RequestService extends IntentService {
                     intent.putExtra(EXTRA_SERVER_RESPONSE, y);
                     LocalBroadcastManager.getInstance(getApplicationContext())
                             .sendBroadcast(intent);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            // Remember to disconnect the connection
-            if(connection != null) connection.disconnect();
+                            */
+            } catch (ProtocolException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
         }
-        Intent openMainActivity = new Intent(getApplicationContext(), InputActivity.class);
-        openMainActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(openMainActivity);
-    }
+        //Intent openMainActivity = new Intent(getApplicationContext(), InputActivity.class);
+        //openMainActivity.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        //startActivity(openMainActivity);
 
-    private void savedatadb(final Pharmacy pharmacy){
-        // Save by RoomDatabase
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                RDatabase.getInstance(getApplicationContext()).getPharmacyDao().save(pharmacy);
-            }
-        }).start();
     }
 
 }
