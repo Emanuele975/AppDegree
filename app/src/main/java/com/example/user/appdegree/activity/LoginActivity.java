@@ -1,5 +1,7 @@
 package com.example.user.appdegree.activity;
 
+
+
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,6 +19,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -37,6 +40,7 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.user.appdegree.R;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -44,7 +48,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.example.user.appdegree.utility.RequestService;
+
 
 import org.json.JSONObject;
 
@@ -96,9 +100,13 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     protected Map<String, String> getParams() throws AuthFailureError {
                         Map<String, String> params = new HashMap<>();
-                        params.put("password","ciao");
-                        params.put("richiesta","richiesta");
+                        params.put("password","ciao"); // da inserire il testo dell'edit
+                        params.put("richiesta","richiesta");// da metterci il parametro booleano
+
                         return params;
+
+
+
                     }
                 };
 
@@ -108,9 +116,11 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        imageView = (ImageView)findViewById(R.id.imageView);
+        imageView = findViewById(R.id.imageView);
 
     }
+
+
 
     private void dispatchPictureTakerAction() {
         if(checkPermission()) {
@@ -119,12 +129,13 @@ public class LoginActivity extends AppCompatActivity {
             {
                 File photoFile = null;
                 try {
-                    photoFile = createPhotoFile();
+                    photoFile = createPhotoFile();// ci potrebbero essere degli errori negli input
                     if (photoFile != null) {
                         pathToFile = photoFile.getAbsolutePath();
-                        Uri photoURI = FileProvider.getUriForFile(LoginActivity.this, "com.example.user.appdegree", photoFile);
-                        takePic.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        Uri photoURI = FileProvider.getUriForFile(LoginActivity.this, "com.example.user.appdegree",photoFile);
+                        takePic.putExtra(MediaStore.EXTRA_OUTPUT,photoURI);
                         startActivityForResult(takePic,1);
+
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -158,16 +169,20 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-            //System.out.print("nel metodo");
+            //System.out.print("AAAAAAAAAAAAAAAAAAAAAAAAAAA");
         if (resultCode == RESULT_OK ) {
+            System.out.print("AAAAAAAAAAAAAAAAAAAAAAAAAAA     ");
             if(requestCode == 1 && data!=null) {
+                System.out.print("BBBBBBBBBBBBBBBBBBBBBBBBB    ");
                 photo = BitmapFactory.decodeFile(pathToFile);
-                imageView.setImageBitmap(photo);
+               imageView.setImageBitmap(photo);//con questo pone la view della login activity uguale alla foto precedente
+
             }
             else
                 System.out.println("data =null");
         }
         else
+
             System.out.println("request code errato");
 
     }
