@@ -17,7 +17,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,15 +28,12 @@ import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
-import com.android.volley.ServerError;
-import com.android.volley.TimeoutError;
 import com.android.volley.VolleyError;
-import com.android.volley.VolleyLog;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.user.appdegree.R;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -44,18 +41,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.example.user.appdegree.utility.RequestService;
-
-import org.json.JSONObject;
-
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
 public class LoginActivity extends AppCompatActivity {
+    int control=0;
     Button btnInvio;
     ImageView imageView;
     String pathToFile;
     Bitmap photo;
-    EditText password;
+    EditText editcity;
     private static final int PERMISSION_REQUEST_CODE = 200;
     private static final int CAMERA_REQUEST = 1888;
 
@@ -65,51 +59,73 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         btnInvio=findViewById(R.id.button3);
-        final Bundle richiesta = getIntent().getExtras();
-
+        editcity = (EditText) findViewById(R.id.edit);
         if (Build.VERSION.SDK_INT >=23)
         {
             requestPermissions(new String[]{Manifest.permission.CAMERA , Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2 );
         }
-
         btnInvio.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 dispatchPictureTakerAction();
-                String url = "http://10.0.2.2:8080/prova";
-                String richiesta = getIntent().getExtras().getString("richiesta");
-
-                System.out.println(richiesta);
-
-                StringRequest stringRequest = new StringRequest(Request.Method.POST ,url, new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(getApplicationContext(), "error: " + error.toString(), Toast.LENGTH_LONG).show();
-                        System.out.println(error.toString());
-                    }
-                }){
-                    @Override
-                    protected Map<String, String> getParams() throws AuthFailureError {
-                        Map<String, String> params = new HashMap<>();
-                        params.put("password","ciao");
-                        params.put("richiesta","richiesta");
-                        return params;
-                    }
-                };
-
-            RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
-            requestQueue.add(stringRequest);
-
+                control = 1;
             }
         });
-
         imageView = (ImageView)findViewById(R.id.imageView);
+    }
 
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        if (control!=0) {
+            this.sendInfo();
+        }
+        control = 0;
+    }
+
+    private static String encodeTobase64(Bitmap image)
+    {
+        Bitmap immagex=image;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        immagex.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] b = baos.toByteArray();
+        String imageEncoded = Base64.encodeToString(b,Base64.DEFAULT);
+        return imageEncoded;
+    }
+
+    private void sendInfo()
+    {
+        String url = "http://10.0.2.2:8080/api/sendinfo";
+        final String richiesta = getIntent().getExtras().getString("richiesta");
+        final String password = editcity.getText().toString();
+        System.out.println("richiesta: "+richiesta+"password: "+password);
+        final String image = encodeTobase64(photo);
+
+        StringRequest stringRequest = new StringRequest(Request.Method.POST ,url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(getApplicationContext(), "error: " + error.toString(), Toast.LENGTH_LONG).show();
+                System.out.println(error.toString());
+            }
+        }){
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<>();
+                params.put("password",password);
+                params.put("richiesta",richiesta);
+                params.put("immagine",image);
+                return params;
+            }
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
+        requestQueue.add(stringRequest);
     }
 
     private void dispatchPictureTakerAction() {
