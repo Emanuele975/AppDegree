@@ -1,39 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="LoginActivity">
+    tools:context=".activity.LoginActivity">
 
 
-    <android.support.design.widget.TextInputLayout
+
+    <EditText
+        android:id="@+id/EditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.333">
+        app:layout_constraintVertical_bias="0.043"
+        tools:layout_editor_absoluteX="49dp" />
 
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/edit"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/stringa3" />
-    </android.support.design.widget.TextInputLayout>
-
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
+    <com.example.keyboard.MyKeyBoard
+        android:id="@+id/keyboard"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/stringa4"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="-4dp"
+
+
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/EditText"
+        app:layout_constraintVertical_bias="1.0" />
 
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>
