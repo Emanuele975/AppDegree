@@ -1,5 +1,7 @@
 package com.example.user.appdegree.activity;
 
+
+
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -20,6 +22,9 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.InputType;
 import android.util.Base64;
+
+import android.util.Log;
+
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
@@ -45,6 +50,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+
+
+
+import org.json.JSONObject;
 
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
@@ -103,7 +113,9 @@ public class LoginActivity extends AppCompatActivity {
         control = 0;
     }
 
-    private static String encodeTobase64(Bitmap image) {
+
+    private static String encodeTobase64(Bitmap image)
+    {
         Bitmap immagex=image;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         immagex.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -112,8 +124,12 @@ public class LoginActivity extends AppCompatActivity {
         return imageEncoded;
     }
 
-    private void sendInfoUscita() {
-        String url = "http://10.0.2.2:8080/api/send_info_exit";
+
+
+    private void sendInfoUscita()
+    {
+        String url = "http://10.0.2.2:8080/api/sendinfo";
+        final String richiesta = getIntent().getExtras().getString("richiesta");
         final String password = editcity.getText().toString();
         System.out.println("password: "+password);
         StringRequest stringRequest = new StringRequest(Request.Method.POST ,url, new Response.Listener<String>() {
@@ -173,6 +189,9 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(openMain);
                 }
             }
+
+
+
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
@@ -189,9 +208,12 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
 
+
         RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
         requestQueue.add(stringRequest);
     }
+
+
 
     private void dispatchPictureTakerAction() {
         if(checkPermission()) {
@@ -200,12 +222,13 @@ public class LoginActivity extends AppCompatActivity {
             {
                 File photoFile = null;
                 try {
-                    photoFile = createPhotoFile();
+                    photoFile = createPhotoFile();// ci potrebbero essere degli errori negli input
                     if (photoFile != null) {
                         pathToFile = photoFile.getAbsolutePath();
-                        Uri photoURI = FileProvider.getUriForFile(LoginActivity.this, "com.example.user.appdegree", photoFile);
-                        takePic.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                        Uri photoURI = FileProvider.getUriForFile(LoginActivity.this, "com.example.user.appdegree",photoFile);
+                        takePic.putExtra(MediaStore.EXTRA_OUTPUT,photoURI);
                         startActivityForResult(takePic,1);
+
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -239,16 +262,18 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-            //System.out.print("nel metodo");
+            //System.out.print("AAAAAAAAAAAAAAAAAAAAAAAAAAA");
         if (resultCode == RESULT_OK ) {
+            System.out.print("AAAAAAAAAAAAAAAAAAAAAAAAAAA     ");
             if(requestCode == 1 && data!=null) {
+                System.out.print("BBBBBBBBBBBBBBBBBBBBBBBBB    ");
                 photo = BitmapFactory.decodeFile(pathToFile);
-                //imageView.setImageBitmap(photo);
             }
             else
                 System.out.println("data =null");
         }
         else
+
             System.out.println("request code errato");
 
     }
