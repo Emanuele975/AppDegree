@@ -101,7 +101,7 @@
         android:gravity="bottom">
         <Button
             android:id="@+id/Button_delete"
-            android:layout_width="40dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="cancella" />
@@ -115,7 +115,7 @@
 
         <Button
             android:id="@+id/Button_invio"
-            android:layout_width="40dp"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Invio" />

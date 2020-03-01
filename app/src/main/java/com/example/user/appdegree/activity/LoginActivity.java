@@ -1,7 +1,5 @@
 package com.example.user.appdegree.activity;
 
-
-
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,6 +13,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.constraint.solver.widgets.Helper;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -34,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkResponse;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -42,32 +42,29 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.user.appdegree.R;
 import com.example.user.appdegree.activity.utility.MyKeyboard;
+import com.example.user.appdegree.activity.utility.VolleyMultipartRequest;
+import com.example.user.appdegree.activity.utility.VolleySingleton;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-
-
-
-import org.json.JSONObject;
-
 import static android.os.Environment.getExternalStoragePublicDirectory;
 
 public class LoginActivity extends AppCompatActivity {
-    int control=0;
+    int control = 0;
     Button btnInvio;
-    ImageView imageView;
     String pathToFile;
     Bitmap photo;
     EditText editcity;
     private static final int PERMISSION_REQUEST_CODE = 200;
     private static final int CAMERA_REQUEST = 1888;
-
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
@@ -113,30 +110,16 @@ public class LoginActivity extends AppCompatActivity {
         control = 0;
     }
 
-
-    private static String encodeTobase64(Bitmap image)
-    {
-        Bitmap immagex=image;
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        immagex.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] b = baos.toByteArray();
-        String imageEncoded = Base64.encodeToString(b,Base64.DEFAULT);
-        return imageEncoded;
-    }
-
-
-
-    private void sendInfoUscita()
-    {
-        String url = "http://10.0.2.2:8080/api/sendinfo";
-        final String richiesta = getIntent().getExtras().getString("richiesta");
+    private void sendInfoUscita() {
+        String url = "http://10.0.2.2:8080/api/activity/exit";
+        //final String richiesta = getIntent().getExtras().getString("richiesta");
         final String password = editcity.getText().toString();
-        System.out.println("password: "+password);
+        //System.out.println("password: "+password);
         StringRequest stringRequest = new StringRequest(Request.Method.POST ,url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
-                System.out.println(response);
+                //System.out.println(response);
                 if(response.equals("-2")) {
                     Toast.makeText(getApplicationContext(), "password errata" , Toast.LENGTH_LONG).show();
                     //System.out.println("psw errata");
@@ -144,6 +127,7 @@ public class LoginActivity extends AppCompatActivity {
                 else if(response.equals("-1"))
                     Toast.makeText(getApplicationContext(), "errore generico" , Toast.LENGTH_LONG).show();
                 else {
+                    Toast.makeText(getApplicationContext(), "uscita effettuata correttamente" , Toast.LENGTH_LONG).show();
                     Intent openMain = new Intent(LoginActivity.this, MainActivity.class);
                     startActivity(openMain);
                 }
@@ -159,20 +143,107 @@ public class LoginActivity extends AppCompatActivity {
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
                 params.put("password",password);
+                params.put("type","EXIT");
                 return params;
             }
         };
 
         RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
         requestQueue.add(stringRequest);
-
     }
 
     private void sendInfoEntrata() {
-        String url = "http://10.0.2.2:8080/api/send_info_entry";
+        String url = "http://10.0.2.2:8080/api/activity/entry";
         final String password = editcity.getText().toString();
-        //System.out.println("richiesta: "+richiesta+"password: "+password);
-        final String image = encodeTobase64(photo);
+        final byte[] data = convertBitmapToByteArray(photo);
+
+        VolleyMultipartRequest multipartRequest = new VolleyMultipartRequest(Request.Method.POST, url , new Response.Listener<NetworkResponse>() {
+            @Override
+            public void onResponse(NetworkResponse response) {
+                //Toast.makeText(getApplicationContext(), response, Toast.LENGTH_LONG).show();
+                String result = new String(response.data);
+                System.out.println(result);
+                if(result.equals("-2")) {
+                    Toast.makeText(getApplicationContext(), "password errata" , Toast.LENGTH_LONG).show();
+                    //System.out.println("psw errata");
+                }
+                else if(result.equals("-1"))
+                    Toast.makeText(getApplicationContext(), "errore generico" , Toast.LENGTH_LONG).show();
+                else if (result.equals("1")) {
+                    Intent openMain = new Intent(LoginActivity.this, MainActivity.class);
+                    Toast.makeText(getApplicationContext(), "entrata effettuata correttamente" , Toast.LENGTH_LONG).show();
+                    startActivity(openMain);
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                //errorExtractionForSaveProfileAccount(error);
+                error.printStackTrace();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+                Map<String, String> params = new HashMap<>();
+                params.put("password", password);
+                params.put("type","ENTRY");
+                System.out.println(Arrays.asList(params));
+                return params;
+            }
+
+            @Override
+            protected Map<String, DataPart> getByteData() {
+                Map<String, DataPart> params = new HashMap<>();
+                try {
+                    //InputStream iStream = getContentResolver().openInputStream(Uri.parse(image_path));
+                    //byte[] inputData = getBytes(iStream);
+                    params.put("file", new DataPart("", data, "image/jpeg"));
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return params;
+            }
+        };
+        //System.out.println("richiesta andata a buon fine");
+        VolleySingleton.getInstance(getBaseContext()).addToRequestQueue(multipartRequest);
+        //System.out.println("tutto a posto");
+
+
+
+        /*
+        HttpClient httpClient = HttpClients.createDefault();
+        PostMethod postMethod = new PostMethod(url);
+        postMethod.addParameter("Email", email);
+        postMethod.addParameter("fname", fname);
+        try {
+            httpClient.executeMethod(postMethod);
+        } catch (HttpException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        URL url = null;
+        try {
+            url = new URL("http://10.0.2.2:8080/api/send_info_entry");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            //header
+            conn.setRequestProperty("Content-Type","multipart/form-data;" );
+            //DataOutputStream request = new DataOutputStream(
+              //      conn.getOutputStream());
+            //request.write(data);
+            //conn.
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //method
+
+
+
+
+        //final String image = encodeTobase64(photo);
         StringRequest stringRequest = new StringRequest(Request.Method.POST ,url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -203,17 +274,19 @@ public class LoginActivity extends AppCompatActivity {
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<>();
                 params.put("password",password);
-                params.put("immagine",image);
                 return params;
             }
+
         };
+        */
 
 
-        RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
-        requestQueue.add(stringRequest);
+
+        //RequestQueue requestQueue = Volley.newRequestQueue(LoginActivity.this);
+        //requestQueue.add(stringRequest);
+
+
     }
-
-
 
     private void dispatchPictureTakerAction() {
         if(checkPermission()) {
@@ -264,18 +337,16 @@ public class LoginActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
             //System.out.print("AAAAAAAAAAAAAAAAAAAAAAAAAAA");
         if (resultCode == RESULT_OK ) {
-            System.out.print("AAAAAAAAAAAAAAAAAAAAAAAAAAA     ");
+            //System.out.print("AAAAAAAAAAAAAAAAAAAAAAAAAAA     ");
             if(requestCode == 1 && data!=null) {
-                System.out.print("BBBBBBBBBBBBBBBBBBBBBBBBB    ");
+                //System.out.print("BBBBBBBBBBBBBBBBBBBBBBBBB    ");
                 photo = BitmapFactory.decodeFile(pathToFile);
             }
             else
                 System.out.println("data =null");
         }
         else
-
             System.out.println("request code errato");
-
     }
 
     private boolean checkPermission() {
@@ -330,6 +401,24 @@ public class LoginActivity extends AppCompatActivity {
                 .setNegativeButton("Cancel", null)
                 .create()
                 .show();
+    }
+
+    public byte[] convertBitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream stream = null;
+        try {
+            stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+
+            return stream.toByteArray();
+        }finally {
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    Log.e(Helper.class.getSimpleName(), "ByteArrayOutputStream was not closed");
+                }
+            }
+        }
     }
 
 }
